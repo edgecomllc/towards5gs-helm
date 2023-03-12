@@ -44,16 +44,7 @@ data:
 
     {{- toYaml .configuration | nindent 4 }}
 
-  wrapper.sh: |
-    #!/bin/sh
-
-    iptables -A FORWARD -j ACCEPT
-    iptables -t nat -A POSTROUTING -s {{ $.Values.global.uesubnet }} -o n6 -j MASQUERADE  # Allow routing traffic comming from the UE SUBNET to the interface N6
-    iptables -t nat -A POSTROUTING -o n9 -j MASQUERADE
-    iptables -t nat -A POSTROUTING -o n3 -j MASQUERADE
-
-    /free5gc/upf/upf -c {{ .volume.mount }}/upfcfg.yaml
+  wrapper.sh: {{- $.Values.upfb.configmap.wrapperSh | toYaml | indent 1 }}
 
 {{- end }}
 {{- end }}
-

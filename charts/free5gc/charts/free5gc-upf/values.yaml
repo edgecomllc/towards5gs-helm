@@ -57,6 +57,22 @@ upf:
     pullPolicy: Always
   configmap:
     name: upf-configmap
+    wrapperSh: |
+      #!/bin/sh
+
+      ### Implement networking rules
+      iptables -A FORWARD -j ACCEPT
+      # route traffic comming from the UE SUBNET to the interface N6
+      iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o n6 -j MASQUERADE
+      # create a routing table for the interface N6
+      echo "1200 n6if" >> /etc/iproute2/rt_tables
+      # use the created ip table to route the traffic comming from the UE SUBNET
+      ip rule add from 10.1.0.0/16 table n6if
+      # add a default route in the created table so that all UEs will use this gateway for external communications
+      # (target IP not in the Data Network attached to the interface N6) and then the Data Network will manage to route the traffic
+      ip route add default via 10.100.100.1 dev n6 table n6if
+
+      /free5gc/upf/upf -c /free5gc/config/upfcfg.yaml
   volume:
     name: upf-volume
     mount: /free5gc/config/
@@ -121,6 +137,22 @@ upf1:
     pullPolicy: Always
   configmap:
     name: upf1-configmap
+    wrapperSh: |
+      #!/bin/sh
+
+      ### Implement networking rules
+      iptables -A FORWARD -j ACCEPT
+      # route traffic comming from the UE SUBNET to the interface N6
+      iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o n6 -j MASQUERADE
+      # create a routing table for the interface N6
+      echo "1200 n6if" >> /etc/iproute2/rt_tables
+      # use the created ip table to route the traffic comming from the UE SUBNET
+      ip rule add from 10.1.0.0/16 table n6if
+      # add a default route in the created table so that all UEs will use this gateway for external communications
+      # (target IP not in the Data Network attached to the interface N6) and then the Data Network will manage to route the traffic
+      ip route add default via 10.100.100.1 dev n6 table n6if
+
+      /free5gc/upf/upf -c /free5gc/config/upfcfg.yaml
   volume:
     name: upf1-volume
     mount: /free5gc/config/
@@ -184,6 +216,22 @@ upf2:
     pullPolicy: Always
   configmap:
     name: upf2-configmap
+    wrapperSh: |
+      #!/bin/sh
+
+      ### Implement networking rules
+      iptables -A FORWARD -j ACCEPT
+      # route traffic comming from the UE SUBNET to the interface N6
+      iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o n6 -j MASQUERADE
+      # create a routing table for the interface N6
+      echo "1200 n6if" >> /etc/iproute2/rt_tables
+      # use the created ip table to route the traffic comming from the UE SUBNET
+      ip rule add from 10.1.0.0/16 table n6if
+      # add a default route in the created table so that all UEs will use this gateway for external communications
+      # (target IP not in the Data Network attached to the interface N6) and then the Data Network will manage to route the traffic
+      ip route add default via 10.100.100.1 dev n6 table n6if
+
+      /free5gc/upf/upf -c /free5gc/config/upfcfg.yaml
   volume:
     name: upf2-volume
     mount: /free5gc/config/
@@ -247,6 +295,16 @@ upfb:
     pullPolicy: Always
   configmap:
     name: upfb-configmap
+    wrapperSh: |
+      #!/bin/sh
+
+      iptables -A FORWARD -j ACCEPT
+      # Allow routing traffic comming from the UE SUBNET to the interface N6
+      iptables -t nat -A POSTROUTING -s 10.1.0.0/16 -o n6 -j MASQUERADE
+      iptables -t nat -A POSTROUTING -o n9 -j MASQUERADE
+      iptables -t nat -A POSTROUTING -o n3 -j MASQUERADE
+
+      /free5gc/upf/upf -c /free5gc/config/upfcfg.yaml
   volume:
     name: upfb-volume
     mount: /free5gc/config/
